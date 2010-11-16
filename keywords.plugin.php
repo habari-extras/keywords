@@ -42,39 +42,7 @@ class Keywords extends Plugin {
      * @return void
      **/
     public function action_update_check() {
-		// No Beacon assigned yet
-		// Update::add( 'Keywords', '', $this->info->version );
-    }
-
-	/**
-	 * Hook action_init()
-	 */
-	public function action_init() {
-		// N/A
-	}
-
-    /**
-     * Plugin activation
-     *
-     * @access public
-     * @param string $file
-     * @return void
-     */
-    public function action_plugin_activation($file) {
-		// N/A
-	}
-
-    /**
-     * Plugin De-activation
-     *
-     * @access public
-     * @param string $file
-     * @return void
-     */
-    public function action_plugin_deactivation($file) {
-        if ( realpath( $file ) == __FILE__ ) {
-			// N/A
-        }
+		Update::add('Keywords', '988D9D60-F159-11DF-B86D-78F8DFD72085', $this->info->version);
     }
 	
 	/**
