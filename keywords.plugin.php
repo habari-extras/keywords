@@ -141,7 +141,7 @@ class Keywords extends Plugin {
 					if(isset($this->theme->post)) {
 						if (strlen($this->theme->post->info->keywords)) {
 							$keywords = $this->theme->post->info->keywords;
-						} else if (count($this->theme->post->tags) > 0) {
+						} else if (is_array($this->theme->post->tags) && count($this->theme->post->tags) > 0) {
 							$keywords = implode(', ', $this->theme->post->tags);
 						}
 					}
