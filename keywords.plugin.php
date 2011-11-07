@@ -22,36 +22,28 @@
  * Inspired by MetaSEO plugin by Habari Community - http://habariproject.org
  * 
  * @package Keywords
- * @version 0.1
- * @author Petr Stuchlik - http:/peeters.22web.net
+ * @version 1.3
+ * @author Petr Stuchlik - http://stuchl4n3k.net
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0 (unless otherwise stated)
- * @link http://peeters.22web.net/project-habari-keywords
+ * @link http://stuchl4n3k.net/project-habari-keywords
  */
 
 class Keywords extends Plugin {
 	
 	/**
-	 * @var $them Theme object that is currently being use for display
+	 * @var $post Post object that is currently being rendered
 	 */
-	private $theme;
-	
-    /**
-     * Beacon Support for Update checking
-     *
-     * @access public
-     * @return void
-     **/
-    public function action_update_check() {
-		Update::add('Keywords', '988D9D60-F159-11DF-B86D-78F8DFD72085', $this->info->version);
-    }
+	private $post;
 	
 	/**
 	 * We only want to use this to obtain reference on current Theme object.
 	 *
-	 * @param $theme Theme object being displayed
+	 * @access public
+	 * @return string
 	 */
-	function action_add_template_vars($theme) {
-  		$this->theme = $theme;
+	public function filter_post_content_out($content, $post) {
+		$this->post = $post;
+		return $content;
 	}
 
     /**
@@ -138,11 +130,11 @@ class Keywords extends Plugin {
 			switch($rule) {
 				case 'display_entry':
 				case 'display_page':
-					if(isset($this->theme->post)) {
-						if (strlen($this->theme->post->info->keywords)) {
-							$keywords = $this->theme->post->info->keywords;
-						} else if (is_array($this->theme->post->tags) && count($this->theme->post->tags) > 0) {
-							$keywords = implode(', ', $this->theme->post->tags);
+					if (isset($this->post)) {
+						if (strlen($this->post->info->keywords)) {
+							$keywords = $this->post->info->keywords;
+						} else if (count($this->post->tags) > 0) {
+							$keywords = implode(',', (array)$this->post->tags);
 						}
 					}
 					break;
@@ -175,9 +167,9 @@ class Keywords extends Plugin {
 			switch($rule) {
 				case 'display_entry':
 				case 'display_page':
-					if(isset($this->theme->post)) {
-						if (strlen($this->theme->post->info->description)) {
-							$description = $this->theme->post->info->description;
+					if(isset($this->post)) {
+						if (strlen($this->post->info->description)) {
+							$description = $this->post->info->description;
 						}
 					}
 					break;
@@ -192,14 +184,16 @@ class Keywords extends Plugin {
     }
 	
 	private function extract_keywords($content) {
-		$tags = preg_match('/(<meta name="keywords" content=".*">)/i', $content, $patterns);
-		$res = $patterns[1];
+		$patterns = array();
+		$tags = preg_match('/(<meta name="keywords" content="[^"]*">)/i', $content, $patterns);
+		$res = isset($patterns[1]) ? $patterns[1] : NULL;
 		return $res;
 	} 
 	
 	private function extract_description($content) {
-		$tags = preg_match('/(<meta name="description" content=".*">)/i', $content, $patterns);
-		$res = $patterns[1];
+		$patterns = array();
+		$tags = preg_match('/(<meta name="description" content="[^"]*">)/i', $content, $patterns);
+		$res = isset($patterns[1]) ? $patterns[1] : NULL;
 		return $res;
 	}
 

@@ -44,6 +44,8 @@ HOW IT WORKS
 REVISION HISTORY
 ----------------
 
+1.3     - Fix for post preview warning, when no keywords were set, but some tags were.
+1.2     - Bug fixes
 1.1     - Some code cleanup, GUID support was added.
 1.0     - Initial release
 
