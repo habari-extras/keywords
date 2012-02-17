@@ -1,6 +1,6 @@
 Plugin: Keywords 1.1
 URL: http://peeters.22web.net/project-habari-keywords
-Plugin Author: Petr Stuchlik - http://peeters.22web.net
+Plugin Author: Petr Stuchlik - http://stuchl4n3k.net
 Licenses:  Keywords : Apache Software License 2.0
 
 DESCRIPTION
