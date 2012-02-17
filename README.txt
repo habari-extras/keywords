@@ -1,6 +1,6 @@
-Plugin: Keywords 1.1
-URL: http://peeters.22web.net/project-habari-keywords
-Plugin Author: Petr Stuchlik - http://peeters.22web.net
+Plugin: Keywords 1.4
+URL: http://stuchl4n3k.net/project-habari-keywords
+Plugin Author: Petr Stuchlik - http://stuchl4n3k.net
 Licenses:  Keywords : Apache Software License 2.0
 
 DESCRIPTION
@@ -44,6 +44,7 @@ HOW IT WORKS
 REVISION HISTORY
 ----------------
 
+1.4     - Habari 0.8 compatibility, code cleanup
 1.3     - Fix for post preview warning, when no keywords were set, but some tags were.
 1.2     - Bug fixes
 1.1     - Some code cleanup, GUID support was added.
