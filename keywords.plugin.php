@@ -8,8 +8,8 @@
  * @package Keywords
  * @version 1.5
  * @author Petr Stuchlik - http://stuchl4n3k.net
- * @url http://stuchl4n3k.net/keywords-plugin
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0 (unless otherwise stated)
+ * @link http://stuchl4n3k.net/keywords-plugin
  */
 class Keywords extends Plugin {
 

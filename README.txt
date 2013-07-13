@@ -45,7 +45,7 @@ REVISION HISTORY
 ----------------
 
 1.5     - Compatibility with Habari 0.9.1.
-1.4     - Compatibility with Habari 0.8.
+1.4     - Compatibility with Habari 0.8, code cleanup.
 1.3     - Fix for post preview warning, when no keywords were set, but some tags were.
 1.2     - Bug fixes
 1.1     - Some code cleanup, GUID support was added.
