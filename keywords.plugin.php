@@ -6,8 +6,9 @@
  * Inspired by MetaSEO plugin by Habari Community - http://habariproject.org
  * 
  * @package Keywords
- * @version 1.4
+ * @version 1.5
  * @author Petr Stuchlik - http://stuchl4n3k.net
+ * @url http://stuchl4n3k.net/keywords-plugin
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0 (unless otherwise stated)
  */
 class Keywords extends Plugin {
@@ -23,7 +24,7 @@ class Keywords extends Plugin {
      * @access public
      * @return string
      */
-    public function filter_post_content_out($content, $post) {
+    public function filter_post_get($content, $name, $post) {
         $this->post = $post;
         return $content;
     }
@@ -125,6 +126,7 @@ class Keywords extends Plugin {
                 default:
             }
         }
+        
         $keywords = htmlspecialchars(strip_tags($keywords), ENT_COMPAT, 'UTF-8');
         if (strlen($keywords)) {
             $out = "<meta name=\"keywords\" content=\"" . $keywords . "\">";

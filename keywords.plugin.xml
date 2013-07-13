@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <pluggable type="plugin">
-	<name>Keywords</name>
-	<license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
-	<url>http://habariproject.org/</url>
-	<author url="http://stuchl4n3k.net">Petr Stuchlik</author>
-	<version>1.4</version>
-	<description><![CDATA[Adds Meta Keywords and Description for each post.]]></description>
-	<copyright>2010</copyright>
-	<guid>988D9D60-F159-11DF-B86D-78F8DFD72085</guid>
-	<help>
-		<value><![CDATA[<p>Keywords is a simple, yet effective Habari plugin which allows you to add HTML Meta tags <strong>Keywords</strong> and <strong>Desctription</strong> for each post you create.</p>
+    <name>Keywords</name>
+    <license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
+    <url>http://stuchl4n3k.net/keywords-plugin</url>
+    <author url="http://stuchl4n3k.net">Petr Stuchlik</author>
+    <version>1.5</version>
+    <description><![CDATA[Adds Meta Keywords and Description for each post.]]></description>
+    <copyright>2010</copyright>
+    <guid>988D9D60-F159-11DF-B86D-78F8DFD72085</guid>
+    <help>
+        <value><![CDATA[<p>Keywords is a simple, yet effective Habari plugin which allows you to add HTML Meta tags <strong>Keywords</strong> and <strong>Desctription</strong> for each post you create.</p>
 				<p>The plugin is inspired by MetaSEO plugin by Habari Community, which was not compatible with the 0.7 Habari version when I was building my first Habari site.</p>
 				<p><strong>Usage:</strong></p>
 				<ol><li>Add following tags in your theme's header.php template inside the &lt;head&gt...&lt;/head&gt tag:<br>
@@ -26,5 +26,5 @@
 					<li>If no keywords or description is filled or if you're not currently viewing any post, no replacing is preformed and default meta tags in your template are displayed.</li>
 				</ul>
 				]]></value>
-	</help>
+    </help>
 </pluggable>
