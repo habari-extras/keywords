@@ -2,183 +2,266 @@
 
 /**
  * Keywords
- * Keywords plugin adds Meta Keywords and Description for each post.
- * Inspired by MetaSEO plugin by Habari Community - http://habariproject.org
+ * Keywords plugin adds keywords, description and robots meta tags to each page.
+ * Different meta tags can be set up for different page types.
  * 
  * @package Keywords
- * @version 1.5
- * @author Petr Stuchlik - http://stuchl4n3k.net
- * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0 (unless otherwise stated)
- * @link http://stuchl4n3k.net/keywords-plugin
+ * @version 1.6
+ * @author Petr Stuchlik
+ * @link http://stuchl4n3k.net/keywords-plugin Plugin homepage
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
 class Keywords extends Plugin {
 
-    /**
-     * @var $post Post object that is currently being rendered
-     */
-    private $post;
+  /**
+   * @var array Currenlty supported meta tags
+   */
+  private $defined_meta_tags = array(
+      'keywords',
+      'description',
+      'robots',
+  );
+  
+  /**
+   * @var array Available rules (page types), you can set different meta tags
+   * for each rule.
+   * @see RewriteRules::add_system_rules() 
+   */
+  private $defined_rules = array(
+      'display_home',
+      'display_entry',
+      'display_post',
+      'display_page',
+      'display_entries',
+      'display_entries_by_date',
+      'display_entries_by_tag',
+      'display_search',
+      'display_404',
+  );
 
-    /**
-     * We only want to use this to obtain reference on current Theme object.
-     *
-     * @access public
-     * @return string
-     */
-    public function filter_post_get($content, $name, $post) {
-        $this->post = $post;
-        return $content;
+  /**
+   * @var Theme An active Theme instance
+   */
+  private $theme;
+
+  /////////////////////////////
+  // HOOKS
+  /////////////////////////////
+
+  public function action_init() {
+    $this->load_text_domain(__CLASS__);
+    $this->load_options();
+  }
+
+  public function action_admin_header($theme) {
+    Stack::add('admin_header_javascript', array($this->get_url() . '/keywords_admin.js'), 'keywords_admin', 'jquery');
+    Stack::add('admin_stylesheet', array($this->get_url() . '/keywords_admin.css', 'screen'));
+  }
+
+  public function action_template_header($theme) {
+    $this->theme = $theme;
+    $rule = $this->get_matched_rule();
+    $tags = $this->get_meta_tags($rule);
+    print "\n\n" . implode("\n", $tags) . "\n\n";
+  }
+
+  /**
+   * Add additional controls to the publish page tab.
+   *
+   * @param FormUI $form The form that is used on the publish page
+   * @param Post $post The post being edited
+   */
+  public function action_form_publish($form, $post) {
+    $fieldset = $form->publish_controls->append('fieldset', 'meta', 'Meta');
+
+    $keywords = $fieldset->append('text', 'keywords', 'null:null', 'Keywords');
+    $keywords->value = strlen($post->info->keywords) ? $post->info->keywords : '';
+    $keywords->template = 'tabcontrol_text';
+
+    $description = $fieldset->append('textarea', 'description', 'null:null', 'Description');
+    $description->value = isset($post->info->description) ? $post->info->description : '';
+    $description->template = 'tabcontrol_textarea';
+  }
+
+  /**
+   * Modify a post before it is updated.
+   *
+   * @param Post $post The post being saved, by reference
+   * @param FormUI $form The form that was submitted on the publish page
+   */
+  public function action_publish_post($post, $form) {
+    if (strlen($form->meta->keywords->value)) {
+      $post->info->keywords = htmlspecialchars(Utils::truncate(strip_tags($form->meta->keywords->value), 200, false), ENT_COMPAT, 'UTF-8');
+    } else {
+      $post->info->__unset('keywords');
     }
 
-    /**
-     * function filter_final_output
-     *
-     * this filter is called before the display of any page, so it is used 
-     * to make any final changes to the output before it is sent to the browser
-     *
-     * @param $buffer string the page being sent to the browser
-     * @return  string the modified page
-     */
-    public function filter_final_output($buffer) {
-        $keywords = $this->get_keywords();
-        if (strlen($keywords)) {
-            $template_keywords = $this->extract_keywords($buffer);
-            if (strlen($template_keywords)) {
-                $buffer = str_replace($template_keywords, $keywords, $buffer);
-            }
-        }
+    if (strlen($form->meta->description->value)) {
+      $post->info->description = htmlspecialchars(Utils::truncate(strip_tags($form->meta->description->value), 200, false), ENT_COMPAT, 'UTF-8');
+    } else {
+      $post->info->__unset('description');
+    }
+  }
 
-        $description = $this->get_description();
-        if (strlen($description)) {
-            $template_description = $this->extract_description($buffer);
-            if (strlen($template_description)) {
-                $buffer = str_replace($template_description, $description, $buffer);
-            }
-        }
+  /**
+   * Configuration settings to appear on the plugin page.
+   * 
+   * @return object FormUI object
+   */
+  public function configure() {
+    URL::get_matched_rule();
+    $ui = new FormUI('keywords_configuration');
 
-        return $buffer;
+    foreach ($this->defined_meta_tags as $type) {
+      $tagslug = Utils::slugify($type, '');
+      $fieldset_tag = $ui->append('fieldset', 'group_' . $tagslug, $this->t('Meta tag %s', array($type)));
+
+      $fieldset_tag->append('text', $tagslug . '_default', 'option:keywords__data_' . $type . '_default', $this->t('Default content:'));
+
+      $fieldset_advanced = $fieldset_tag->append('fieldset', 'group_' . $tagslug . '_advanced', $this->t('Advanced'));
+      foreach ($this->defined_rules as $rule) {
+        $fieldset_advanced->append('text', $tagslug . '_' . $rule, 'option:keywords__data_' . $type . '_' . $rule, $this->t('Content for %s:', array($rule)));
+      }
     }
 
-    /**
-     * Add additional controls to the publish page tab
-     *
-     * @param FormUI $form The form that is used on the publish page
-     * @param Post $post The post being edited
-     */
-    public function action_form_publish($form, $post) {
-        $fieldset = $form->publish_controls->append('fieldset', 'meta', 'Meta');
+    $ui->append('submit', 'save', 'Save');
 
-        $keywords = $fieldset->append('text', 'keywords', 'null:null', 'Keywords');
-        $keywords->value = strlen($post->info->keywords) ? $post->info->keywords : '';
-        $keywords->template = 'tabcontrol_text';
+    return $ui;
+  }
 
-        $description = $fieldset->append('textarea', 'description', 'null:null', 'Description');
-        $description->value = isset($post->info->description) ? $post->info->description : '';
-        $description->template = 'tabcontrol_textarea';
+  /////////////////////////////
+  // HELPERS
+  /////////////////////////////
+
+  /**
+   * Creates an array of printable meta tags.
+   * 
+   * @param string $rule
+   * @return array Array of meta tags
+   */
+  public function get_meta_tags($rule) {
+    if (!in_array($rule, $this->defined_rules)) {
+      return NULL;
     }
 
-    /**
-     * Modify a post before it is updated
-     *
-     * @param Post $post The post being saved, by reference
-     * @param FormUI $form The form that was submitted on the publish page
-     */
-    public function action_publish_post($post, $form) {
-        if (strlen($form->meta->keywords->value)) {
-            $post->info->keywords = htmlspecialchars(Utils::truncate(strip_tags($form->meta->keywords->value), 200, false), ENT_COMPAT, 'UTF-8');
-        } else {
-            $post->info->__unset('keywords');
-        }
+    $tags = array();
+    foreach ($this->defined_meta_tags as $type) {
+      $tag_data = $this->get_meta_tag_data($type, $rule);
+      $tags[$type] = $this->create_meta_tag($tag_data);
+    }
+    return $tags;
+  }
 
-        if (strlen($form->meta->description->value)) {
-            $post->info->description = htmlspecialchars(Utils::truncate(strip_tags($form->meta->description->value), 200, false), ENT_COMPAT, 'UTF-8');
-        } else {
-            $post->info->__unset('description');
-        }
+  public function get_meta_tag_data($type, $rule) {
+    $data = array();
+    if (substr($type, 0, 3) === 'og:' || substr($type, 0, 3) === 'fb:' || substr($type, 0, 8) === 'twitter:') {
+      $data['property'] = $type;
+    } else {
+      $data['name'] = $type;
+    }
+    $data['content'] = $this->get_meta_tag_content($type, $rule);
+    return $data;
+  }
+
+  public function get_meta_tag_content($type, $rule) {
+    $content = NULL;
+
+    if ($type === 'keywords') {
+      $content = $this->get_keywords_content($rule);
+    } else if ($type === 'description') {
+      $content = $this->get_description_content($rule);
+    } else {
+      $content = Options::get('keywords__data_' . $type . '_' . $rule, '');
     }
 
-    /**
-     * Return the string list of keywords for the post
-     *
-     * @access private
-     * @return string
-     */
-    private function get_keywords() {
-        $out = '';
-        $keywords = '';
-
-        $matched_rule = URL::get_matched_rule();
-        if (is_object($matched_rule)) {
-            $rule = $matched_rule->name;
-            switch ($rule) {
-                case 'display_entry':
-                case 'display_page':
-                    if (isset($this->post)) {
-                        if (strlen($this->post->info->keywords)) {
-                            $keywords = $this->post->info->keywords;
-                        } else if (count($this->post->tags) > 0) {
-                            $keywords = implode(',', (array) $this->post->tags);
-                        }
-                    }
-                    break;
-                case 'display_entries_by_tag':
-                    $keywords = Controller::get_var('tag');
-                    break;
-                default:
-            }
-        }
-        
-        $keywords = htmlspecialchars(strip_tags($keywords), ENT_COMPAT, 'UTF-8');
-        if (strlen($keywords)) {
-            $out = "<meta name=\"keywords\" content=\"" . $keywords . "\">";
-        }
-        return $out;
+    if (strlen($content) === 0) {
+      $content = Options::get('keywords__data_' . $type . '_default', '');
     }
 
-    /**
-     * Return the description for the post
-     *
-     * @access private
-     * @return string
-     */
-    private function get_description() {
-        $out = '';
-        $description = '';
+    return htmlspecialchars(strip_tags($content), ENT_COMPAT, 'UTF-8');
+  }
 
-        $matched_rule = URL::get_matched_rule();
-        if (is_object($matched_rule)) {
-            $rule = $matched_rule->name;
-            switch ($rule) {
-                case 'display_entry':
-                case 'display_page':
-                    if (isset($this->post)) {
-                        if (strlen($this->post->info->description)) {
-                            $description = $this->post->info->description;
-                        }
-                    }
-                    break;
-                default:
-            }
+  /**
+   * Returns keywords metatag for the given URL rule.
+   * 
+   * @param string $rule URL rule
+   * @return string complete meta tag
+   */
+  public function get_keywords_content($rule) {
+    $content = NULL;
+
+    if ($rule === 'display_entry' || $rule === 'display_page') {
+      if (isset($this->theme->post)) {
+        $post = $this->theme->post;
+        if (strlen($post->info->keywords)) {
+          $content = $post->info->keywords;
+        } else if (count($post->tags) > 0) {
+          $content = implode(',', (array) $post->tags);
         }
-        $description = htmlspecialchars(strip_tags($description), ENT_COMPAT, 'UTF-8');
-        if (strlen($description)) {
-            $out = "<meta name=\"description\" content=\"" . $description . "\">";
-        }
-        return $out;
+      }
     }
 
-    private function extract_keywords($content) {
-        $patterns = array();
-        $tags = preg_match('/(<meta name="keywords" content="[^"]*">)/i', $content, $patterns);
-        $res = isset($patterns[1]) ? $patterns[1] : NULL;
-        return $res;
+    if ($content === NULL || strlen($content) === 0) {
+      $content = Options::get('keywords__data_keywords_' . $rule, '');
     }
 
-    private function extract_description($content) {
-        $patterns = array();
-        $tags = preg_match('/(<meta name="description" content="[^"]*">)/i', $content, $patterns);
-        $res = isset($patterns[1]) ? $patterns[1] : NULL;
-        return $res;
+    return $content;
+  }
+
+  /**
+   * Returns description metatag for the given URL rule.
+   * 
+   * @param string $rule URL rule
+   * @return string complete meta tag
+   */
+  public function get_description_content($rule) {
+    $content = '';
+
+    if ($rule === 'display_entry' || $rule === 'display_page') {
+      if (isset($this->theme->post)) {
+        $post = $this->theme->post;
+        $content = $post->info->description;
+      }
     }
+
+    if ($content === NULL || strlen($content) === 0) {
+      $content = Options::get('keywords__data_description_' . $rule, '');
+    }
+
+    return $content;
+  }
+
+  private function get_matched_rule() {
+    $matched_rule = URL::get_matched_rule();
+    if (is_object($matched_rule)) {
+      $rule = $matched_rule->name;
+      return $rule;
+    }
+    return NULL;
+  }
+
+  private function create_meta_tag(array $tag_data) {
+    $tag = '<meta';
+    foreach ($tag_data as $key => $value) {
+      $tag .= ' ' . $key . '="' . $value . '"';
+    }
+    $tag .= '>';
+    return $tag;
+  }
+
+  /**
+   * Translation helper.
+   * @param string $what
+   * @param array $args
+   * @return string
+   */
+  private function t($what, $args = array()) {
+    return _t($what, $args, __CLASS__);
+  }
+
+  private function load_options() {
+    $this->options = Options::get_group('keywords');
+  }
 
 }
 

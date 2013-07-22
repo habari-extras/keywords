@@ -1,0 +1,14 @@
+#keywords_configuration fieldset fieldset.collapsed {
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    padding-bottom: 0;
+    padding-top: 0;
+    margin-bottom: 0;
+}
+#keywords_configuration fieldset fieldset legend {
+    cursor: pointer;
+}
+#keywords_configuration fieldset fieldset.collapsed .formcontrol {
+    display: none;
+}

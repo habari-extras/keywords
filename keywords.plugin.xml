@@ -4,27 +4,18 @@
     <license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
     <url>http://stuchl4n3k.net/keywords-plugin</url>
     <author url="http://stuchl4n3k.net">Petr Stuchlik</author>
-    <version>1.5</version>
-    <description><![CDATA[Adds Meta Keywords and Description for each post.]]></description>
+    <version>1.6</version>
+    <description><![CDATA[Adds keywords, description and robots meta tags to each page.]]></description>
     <copyright>2010</copyright>
     <guid>988D9D60-F159-11DF-B86D-78F8DFD72085</guid>
     <help>
-        <value><![CDATA[<p>Keywords is a simple, yet effective Habari plugin which allows you to add HTML Meta tags <strong>Keywords</strong> and <strong>Desctription</strong> for each post you create.</p>
-				<p>The plugin is inspired by MetaSEO plugin by Habari Community, which was not compatible with the 0.7 Habari version when I was building my first Habari site.</p>
-				<p><strong>Usage:</strong></p>
-				<ol><li>Add following tags in your theme's header.php template inside the &lt;head&gt...&lt;/head&gt tag:<br>
-						<code>&lt;meta name="keywords" content="your, default, keywords"&gt;</code><br>
-						<code>&lt;meta name="description" content="Your default description."&gt;</code>
-					</li>
-					<li>Activate this plugin</li>
-					<li>In each post you create, fill in the 'Meta' section.</li>
-				</ol>
-				<p><strong>How it works:</strong></p>
-				<ul><li>Keywords plugin checks, if there are any keywords and description filled in for currently displayed post.
-</li>
-					<li>It replaces your default meta keywords and meta description tag contents with the values you filled in.</li>
-					<li>If no keywords or description is filled or if you're not currently viewing any post, no replacing is preformed and default meta tags in your template are displayed.</li>
-				</ul>
-				]]></value>
+        <value><![CDATA[<p>Keywords is a simple, yet effective Habari plugin which allows you to add HTML Meta tags <strong>Keywords</strong>, <strong>Desctription</strong> and <strong>Robots</strong> for each page type of your blog.</p>
+                        <p><strong>Usage:</strong></p>
+                        <ol>
+                                <li>Activate this plugin.</li>
+                                <li>Confifure this plugin and set up default meta tags. You can use <strong>Advanced config</strong> to set up different meta tags for different page types.</li>
+                                <li>Fill in new <strong>Meta</strong> section on entry edit form - this way you can set up special keywords and description for each entry.</li>
+                        </ol>
+                        ]]></value>
     </help>
 </pluggable>
