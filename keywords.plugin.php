@@ -21,7 +21,7 @@ class Keywords extends Plugin {
       'description',
       'robots',
   );
-  
+
   /**
    * @var array Available rules (page types), you can set different meta tags
    * for each rule.
@@ -147,19 +147,25 @@ class Keywords extends Plugin {
     $tags = array();
     foreach ($this->defined_meta_tags as $type) {
       $tag_data = $this->get_meta_tag_data($type, $rule);
-      $tags[$type] = $this->create_meta_tag($tag_data);
+      if ($tag_data !== NULL) {
+        $tags[$type] = $this->create_meta_tag($tag_data);
+      }
     }
     return $tags;
   }
 
   public function get_meta_tag_data($type, $rule) {
     $data = array();
+    $content = $this->get_meta_tag_content($type, $rule);
+    if ($content === NULL || strlen($content) === 0) {
+      return NULL;
+    }
     if (substr($type, 0, 3) === 'og:' || substr($type, 0, 3) === 'fb:' || substr($type, 0, 8) === 'twitter:') {
       $data['property'] = $type;
     } else {
       $data['name'] = $type;
     }
-    $data['content'] = $this->get_meta_tag_content($type, $rule);
+    $data['content'] = $content;
     return $data;
   }
 
